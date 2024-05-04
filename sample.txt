@@ -1,1 +1,2 @@
 echo "installed"
+echo "new commit"

@@ -7,14 +7,6 @@ pipeline {
     DOCKERHUB_CREDENTIALS = credentials('a5fe5e55-b69e-4c5d-8e77-4b4e9a5d8a72')
   }
   stages {
-    stage('Initialize') {
-      steps {
-        def dockerHome = tool 'myDocker'
-        env.PATH = "${dockerHome}/bin:${env.PATH}"
-        sh 'sudo usermod -a -G docker jenkins'
-        echo 'initialized successfully'
-      }
-    }
     stage('Build') {
       steps {
         sh 'docker build -t aswin3498/practicejenkins:latest .'
@@ -23,8 +15,12 @@ pipeline {
     }
     stage('Login') {
       steps {
-        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-	echo 'docker logged in'
+	script {
+	    def dockerHome = tool name: 'myDocker', type: 'DockerTool'
+	    env.PATH = "${dockerHome}/bin:${env.PATH}"
+	    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+	    echo 'docker logged in'
+	}
       }
     }
     stage('Push') {

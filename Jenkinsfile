@@ -7,6 +7,12 @@ pipeline {
     DOCKERHUB_CREDENTIALS = credentials('a5fe5e55-b69e-4c5d-8e77-4b4e9a5d8a72')
   }
   stages {
+    stage('Initialize') {
+      def dockerHome = tool 'myDocker'
+      env.PATH = "${dockerHome}/bin:${env.PATH}"
+      sh 'sudo usermod -a -G docker jenkins'
+      echo 'initialized successfully'
+    }
     stage('Build') {
       steps {
         sh 'docker build -t aswin3498/practicejenkins:latest .'

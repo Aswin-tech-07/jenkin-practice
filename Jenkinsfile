@@ -1,40 +1,35 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:19.03.12-dind'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
+  agent any
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '5'))
+  }
+  environment {
+    DOCKERHUB_CREDENTIALS = credentials('a5fe5e55-b69e-4c5d-8e77-4b4e9a5d8a72')
+  }
+  stages {
+    stage('Build') {
+      steps {
+        sh 'docker build -t aswin3498/practicejenkins:latest .'
+	    echo 'docker build completed'
+      }
     }
-    options {
-        buildDiscarder(logRotator(numToKeepStr: '5'))
+    stage('Login') {
+      steps {
+        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+	    echo 'docker logged in'
+      }
     }
-    environment {
-        DOCKERHUB_CREDENTIALS = credentials('your-credentials-id')
+    stage('Push') {
+      steps {
+        sh 'docker push aswin3498/practicejenkins:latest'
+	    echo 'docker image published'
+      }
     }
-    stages {
-        stage('Build') {
-            steps {
-                sh 'docker build -t your-dockerhub-username/your-repo-name:latest .'
-                echo 'Docker build completed'
-            }
-        }
-        stage('Login') {
-            steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                echo 'Docker login successful'
-            }
-        }
-        stage('Push') {
-            steps {
-                sh 'docker push your-dockerhub-username/your-repo-name:latest'
-                echo 'Docker image pushed'
-            }
-        }
+  }
+  post {
+    always {
+      sh 'docker logout'
+      echo 'docker logged out'
     }
-    post {
-        always {
-            sh 'docker logout'
-            echo 'Docker logout completed'
-        }
-    }
+  }
 }
